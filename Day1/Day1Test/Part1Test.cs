@@ -2,21 +2,23 @@ namespace Day1Test;
 
 public class Part1Test
 {
-    [Fact]
-    public void TestFirstDigit()
+    [Theory]
+    [InlineData("1abc2", 1)]
+    [InlineData("zoneight234", 2)]
+    public void TestFirstDigit(string input, int result)
     {
         var sut = new Part1();
-        Assert.Equal(1, sut.FirstDigit("1abc2"));
-        Assert.Equal(2, sut.FirstDigit("zoneight234"));
+        Assert.Equal(result, sut.FirstDigit(input));
     }
 
-    [Fact]
-    public void TestGetNumber()
+    [Theory]
+    [InlineData("1abc2", 12)]
+    [InlineData("zoneight234", 24)]
+    [InlineData("treb7uchet", 77)]
+    public void TestGetNumber(string input, int result)
     {
         var sut = new Part1();
-        Assert.Equal(12, sut.GetNumber("1abc2"));
-        Assert.Equal(24, sut.GetNumber("zoneight234"));
-        Assert.Equal(77, sut.GetNumber("treb7uchet"));
+        Assert.Equal(result, sut.GetNumber(input));
     }
 
     [Fact]

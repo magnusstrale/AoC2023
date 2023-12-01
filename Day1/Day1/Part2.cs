@@ -1,32 +1,32 @@
 public class Part2
 {
-    string[] digitNames = { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
-    string[] reverseDigitNames;
-
-    public Part2()
-    {
-        reverseDigitNames = digitNames.Select(d => ReverseString(d)).ToArray();
-    }
+    List<string> digitNames = new() { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
 
     public int SumLines(string[] lines) => 
         lines.Sum(GetNumber);
 
-    int GetNumber(string line) =>
-        FirstDigit(line, digitNames) * 10 + FirstDigit(ReverseString(line), reverseDigitNames);
+    public int GetNumber(string line) =>
+        FirstDigit(line) * 10 + LastDigit(line);
 
-    int FirstDigit(string line, string[] names)
+    public int FirstDigit(string line)
     {
-        for (var i = 0; i < line.Length; i++)
-        {
-            if (char.IsAsciiDigit(line[i])) return line[i] - '0';
-            var substr = line.Substring(i);
-            for (var j = 0; j < names.Length; j++)
-            {
-                if (substr.StartsWith(names[j])) return j + 1;
-            }
-        }
-        throw new Exception("Boom");
+        int value;
+        while ((value = TryDigit(line)) == 0)
+            line = line[1..];
+        return value;
     }
 
-    string ReverseString(string str) => new string(str.Reverse().ToArray());
+    public int LastDigit(string line)
+    {
+        int value;
+        var index = 1;
+        while ((value = TryDigit(line[^index++..])) == 0);    
+        return value;
+    }
+
+    public int TryDigit(string substring) =>
+        char.IsAsciiDigit(substring[0]) ? substring[0] - '0' : TryNamedDigit(substring);
+
+    public int TryNamedDigit(string substring) =>
+        digitNames.FindIndex(n => substring.StartsWith(n)) + 1; // Return value will be zero if no match
 }
