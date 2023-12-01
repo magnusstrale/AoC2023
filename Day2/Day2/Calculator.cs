@@ -4,7 +4,7 @@ public class Calculator
 
     public Calculator(string[] lines)
     {
-        _games = lines.Select(l => Game.Parse(l)).ToList();
+        _games = lines.Select(Game.Parse).ToList();
     }
 
     public int SumOfPossibleGames =>

@@ -6,9 +6,10 @@ public record Game(int Id, IEnumerable<Reveal> Reveals)
     {
         var idAndReveals = line.Split(':', StringSplitOptions.TrimEntries);
         var id = int.Parse(idAndReveals[0][4..]);
-        var reveals = idAndReveals[1].Split(';', StringSplitOptions.TrimEntries);
-        var collector = reveals.Select(r => Reveal.Parse(r)).ToArray();
-        return new Game(id, collector);
+        var reveals = idAndReveals[1]
+            .Split(';', StringSplitOptions.TrimEntries)
+            .Select(Reveal.Parse);
+        return new Game(id, reveals);
     }
     public bool Possible(int maxRed, int maxGreen, int maxBlue) =>
         !Reveals.Any(r => r.Red > maxRed || r.Green > maxGreen || r.Blue > maxBlue);
