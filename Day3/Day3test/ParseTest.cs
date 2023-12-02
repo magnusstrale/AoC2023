@@ -22,6 +22,14 @@ public class PaseTest
         Assert.Equal(4361, result);
     }
 
+    [Fact]
+    public void Test2()
+    {
+        var sut = new Map(lines);
+        var result = sut.SumGearRatio();
+        Assert.Equal(467835, result);
+    }
+
     [Theory]
     [InlineData("123%34", 157)]
     [InlineData("123.34", 0)]
