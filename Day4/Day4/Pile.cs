@@ -7,16 +7,13 @@ public class Pile
         _cards = lines.Select(l => new Card(l)).ToArray();
     }
 
-    public int SumWinningCards =>
-        _cards.Select(c => c.Score).Sum();
+    public int SumWinningCards => _cards.Select(c => c.Score).Sum();
 
-    public int CountTotalCards =>
-        _cards.Sum(CountCards);
+    public int CountTotalCards => _cards.Sum(CountCards);
 
-    int CountCards(Card c)
+    int CountCards(Card c) => c switch
     {
-        if (c.WinCount == 0) return 1;
-        var cardsWon = _cards[c.CardNumber..(c.CardNumber + c.WinCount)];
-        return cardsWon.Sum(CountCards) + 1;
-    }
+        { WinCount: 0 } => 1,
+        _ => _cards[c.CardNumber..(c.CardNumber + c.WinCount)].Sum(CountCards) + 1
+    };
 }
