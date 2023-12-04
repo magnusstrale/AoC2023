@@ -10,7 +10,7 @@ public class Card
         WinCount = myCards.Where(m => winningCards.Contains(m)).Count();
     }
 
-    int[] ParseNumbers(string nums) =>
+    static int[] ParseNumbers(string nums) =>
         nums.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(int.Parse)
             .ToArray();
