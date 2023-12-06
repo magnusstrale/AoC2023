@@ -7,7 +7,7 @@ public class Card
         var numbers = cardAndNumbers[1].Split(" | ");
         var winningCards = ParseNumbers(numbers[0]);
         var myCards = ParseNumbers(numbers[1]);
-        WinCount = myCards.Where(m => winningCards.Contains(m)).Count();
+        WinCount = myCards.Intersect(winningCards).Count();
     }
 
     static int[] ParseNumbers(string nums) =>
