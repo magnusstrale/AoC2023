@@ -1,5 +1,3 @@
-using System.Numerics;
-
 public class Navigation
 {
     int _directionIndex;
@@ -22,66 +20,53 @@ public class Navigation
 
     public Dictionary<string, Node> Network { get; }
 
-    public int StepsToFinish()
+    public long StepsToFinish =>
+        StepsUntil(Network["AAA"], n => n.Name == "ZZZ");
+
+    public long GhostStepsToFinish =>
+        Network
+            .Where(kv => kv.Key.EndsWith('A'))
+            .Select(kv => StepsUntil(kv.Value, n => n.Name.EndsWith('Z')))
+            .Aggregate(1L, LCM);
+
+    static long LCM(long x, long y)
     {
-        var current = Network["AAA"];
-        var steps = 0;
+        var product = x * y;
+        while (x != y)
+        {
+            if (x > y)
+                x -= y;
+            else
+                y -= x;
+        }
+        return product / x;
+    }
+
+    public long StepsUntil(Node startNode, Func<Node, bool> exitCondition)
+    {
+        var steps = 0L;
+        var node = startNode;
         ResetDirection();
-        while (current.Name != "ZZZ")
+        while (!exitCondition(node))
         {
             steps++;
-            current = Move(current);
+            node = Move(node);
         }
         return steps;
     }
 
-    public long GhostStepsToFinish()
-    {
-        var ghostNodes = Network.Where(kv => kv.Key.EndsWith('A')).Select(kv => kv.Value).ToArray();
-        var ghostSteps = new List<long>();
-        foreach (var ghostNode in ghostNodes)
-        {
-            var steps = 0;
-            ResetDirection();
-            var node = ghostNode;
-            while (!node.Name.EndsWith('Z'))
-            {
-                steps++;
-                node = Move(node);
-            }
-            ghostSteps.Add(steps);
-        }
+    public Node Move(Node n) =>
+        Network[GetDirectionAndAdvance() == 'L' ? n.Left : n.Right];
 
-        return ghostSteps.Aggregate(1L, LCM);
-    }
-
-    static long LCM(long x, long y)
-    {
-        var num1 = x;
-        var num2 = y;
-        while (num1 != num2)
-        {
-            if (num1 > num2)
-                num1 -= num2;
-            else
-                num2 -= num1;
-        }
-        return (x * y) / num1;
-    }
-
-    public char GetDirectionAndAdvance()
+    char GetDirectionAndAdvance()
     {
         var d = Directions[_directionIndex++];
         if (_directionIndex == Directions.Length) _directionIndex = 0;
         return d;
     }
 
-    public void ResetDirection()
+    void ResetDirection()
     {
         _directionIndex = 0;
     }
-
-    public Node Move(Node n) =>
-        Network[GetDirectionAndAdvance() == 'L' ? n.Left : n.Right];
-
 }
