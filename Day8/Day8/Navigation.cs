@@ -29,9 +29,10 @@ public class Navigation
             .Select(kv => StepsUntil(kv.Value, n => n.Name.EndsWith('Z')))
             .Aggregate(1L, LCM);
 
-    static long LCM(long x, long y)
+    static long LCM(long x, long y) => y * (x / GCD(x, y)); // Parens to prevent overflow
+
+    static long GCD(long x, long y)
     {
-        var product = x * y;
         while (x != y)
         {
             if (x > y)
@@ -39,7 +40,7 @@ public class Navigation
             else
                 y -= x;
         }
-        return product / x;
+        return x;
     }
 
     public long StepsUntil(Node startNode, Func<Node, bool> exitCondition)
