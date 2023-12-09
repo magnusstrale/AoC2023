@@ -15,4 +15,6 @@ dotnet add reference ../$DAY/$DAY.csproj
 cd ..
 touch $DAY/input.txt
 echo 'var lines = File.ReadAllLines("input.txt");' > $DAY/Program.cs
+echo 'Console.WriteLine($"Part 1 {1}");' >> $DAY/Program.cs
+echo 'Console.WriteLine($"Part 2 {2}");' >> $DAY/Program.cs
 code .
