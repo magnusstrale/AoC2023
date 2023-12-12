@@ -1,4 +1,4 @@
-global using Pos = (long row, long col);
+using Pos = (long row, long col);
 
 public class Universe
 {
@@ -31,7 +31,7 @@ public class Universe
         var filledEntries = StartingGalaxies.Select(extractEntity).Distinct().ToArray();
         return Enumerable.Range(0, max + 1).Where(e => !filledEntries.Contains(e)).ToArray();
     }
-    
+
     public long SumOfDistances =>
         SumOfScaledDistances(2);
 
