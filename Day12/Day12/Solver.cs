@@ -9,5 +9,7 @@ public class Solver
 
     public Record[] Records { get; }
 
-    public int CountPossibleArrangements => Records.Sum(r => r.ArrangementCount());
+    public long CountPossibleArrangements => Records.Sum(r => r.ArrangementCount());
+
+    public long CountExpandedArrangements => Records.Sum(r => r.ExpandedArrangementCount());
 }

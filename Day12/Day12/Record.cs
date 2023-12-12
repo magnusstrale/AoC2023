@@ -1,46 +1,69 @@
+using System.Collections.Concurrent;
+using System.Data;
 using System.Security.Cryptography.X509Certificates;
 
 public class Record
 {
+    Dictionary<(int, int, int), long> _cache;
+    string _condition;
+    int[] _runs;
+
     public Record(string line)
     {
         var parts = line.Split(' ');
         GivenCondition = parts[0];
-        Runs = parts[1].Split(',').Select(int.Parse).ToArray();
+        GivenRuns = parts[1].Split(',').Select(int.Parse).ToArray();
+        _condition = GivenCondition;
+        _runs = [];
+        _cache = [];
     }
 
-    public string GivenCondition { get; }
+    public string GivenCondition  { get; }
+    public string Condition => _condition;
 
-    public int[] Runs { get; }
+    public int[] GivenRuns { get; }
+    public int[] Runs => _runs;
 
-    public int ArrangementCount()
+    public long ArrangementCount()
     {
-        var qPos = GivenCondition.Zip(Enumerable.Range(0, GivenCondition.Length)).Where(t => t.First == '?').Select(t => t.Second).ToArray();
-        var condArray = GivenCondition.ToArray();
-        var qCount = qPos.Length;
-        long combinations = 1 << qCount;
-        var validCombinations = 0;
-        for (long i = 0; i < combinations; i ++)
+        _cache.Clear();
+        _condition = GivenCondition;
+        _runs = GivenRuns;
+        return CountArrangements(0, 0, 0);
+    }
+
+    public long ExpandedArrangementCount() 
+    { 
+        _cache.Clear();
+        _condition = string.Join('?', GivenCondition, GivenCondition, GivenCondition, GivenCondition, GivenCondition);
+        _runs = [.. GivenRuns, .. GivenRuns, .. GivenRuns, .. GivenRuns, .. GivenRuns];
+        return CountArrangements(0, 0, 0);
+    }
+
+    long CountArrangements(int condIndex, int runIndex, int currentRunValue)
+    {
+        if (_cache.TryGetValue((condIndex, runIndex, currentRunValue), out var cachedCount))
+            return cachedCount;
+        if (Condition.Length == condIndex)
+            return (Runs.Length == runIndex && currentRunValue == 0) || (runIndex == Runs.Length - 1 && Runs[runIndex] == currentRunValue) ? 1 : 0;
+        long count = 0;
+        var ch = Condition[condIndex];
+        if (ch == '.' || ch == '?')
         {
-            for (var j = 0; j < qCount; j++)
+            if (currentRunValue == 0)
             {
-                long bit = 1 << j;
-                condArray[qPos[j]] = (i & bit) == 0 ? '#' : '.';
+                count += CountArrangements(condIndex + 1, runIndex, 0);
             }
-            if (IsValid(new string(condArray))) validCombinations ++;
+            else if (runIndex < Runs.Length && Runs[runIndex] == currentRunValue)
+            {
+                count += CountArrangements(condIndex + 1, runIndex + 1, 0);
+            }
         }
-
-        return validCombinations;
-    }
-
-    public bool IsValid(string cond)
-    {
-        var damagedRuns = cond.Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        if (damagedRuns.Length != Runs.Length) return false;
-        for (var i = 0; i < Runs.Length; i++)
+        if (ch == '#' || ch == '?')
         {
-            if (damagedRuns[i].Length != Runs[i]) return false;
+            count += CountArrangements(condIndex + 1, runIndex, currentRunValue + 1);
         }
-        return true;
+        _cache[(condIndex, runIndex, currentRunValue)] = count;
+        return count;
     }
 }
