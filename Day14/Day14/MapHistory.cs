@@ -13,7 +13,7 @@ public class MapHistory
     } 
 
     public CMap Map(int i) => _history[i];
-    
+
     public int PreviousMap(CMap map)
     {
         var steps = 0;
@@ -25,15 +25,5 @@ public class MapHistory
         return -1;
     }
 
-    bool MapEqual(CMap x, CMap y)
-    {
-        for (var r = 0; r < x.Length; r ++)
-        {
-            for (var c = 0; c < x[r].Length; c++)
-            {
-                if (x[r][c] != y[r][c]) return false;
-            }
-        }
-        return true;
-    }
+    bool MapEqual(CMap x, CMap y) => x.SelectMany(r => r).Zip(y.SelectMany(r => r)).All(p => p.First == p.Second);
 }
