@@ -3,122 +3,59 @@ global using CMap = char[][];
 using System.Data;
 using System.Diagnostics;
 
-public class Platform
+public class Platform(string[] lines)
 {
-    MapHistory _history;
-    public CMap Map;
+    MapHistory History { get; } = new();
 
-    public Platform(string[] lines)
-    {
-        Map = lines.Select(l => l.ToArray()).ToArray();
-        _history = new();
-    }
+    public CMap Map = lines.Select(l => l.ToArray()).ToArray();
 
-    public void TiltNorth()
+    public void TiltNorth() => Tilt(1, 0);
+
+    void Tilt(int rowOffset, int colOffset)
     {
+        int OffsetToStart(int offset) => offset == -1 ? 1 : 0;
+        int OffsetToEnd(int offset) => offset == 1 ? 1 : 0;
+
         var movement = true;
         while (movement)
         {
             movement = false;
-            for (var row = 0; row < Map.Length - 1; row ++)
+            for (var row = OffsetToStart(rowOffset); row < Map.Length - OffsetToEnd(rowOffset); row ++)
             {
-                for (var col = 0; col < Map[row].Length; col ++)
+                for (var col = OffsetToStart(colOffset); col < Map[row].Length - OffsetToEnd(colOffset); col ++)
                 {
-                    if (Map[row][col] == '.' && Map[row + 1][col] == 'O')
+                    if (Map[row][col] == '.' && Map[row + rowOffset][col + colOffset] == 'O')
                     {
                         movement = true;
                         Map[row][col] = 'O';
-                        Map[row + 1][col] = '.';
+                        Map[row + rowOffset][col + colOffset] = '.';
                     }
                 }
             }
         }
     }
 
-    public void TiltSouth()
+    void Cycle()
     {
-        var movement = true;
-        while (movement)
+        foreach ((var rowOffset, var colOffset) in new [] {(1,0), (0, 1), (-1, 0), (0, -1)})
         {
-            movement = false;
-            for (var row = Map.Length - 1; row > 0; row--)
-            {
-                for (var col = 0; col < Map[row].Length; col ++)
-                {
-                    if (Map[row][col] == '.' && Map[row - 1][col] == 'O')
-                    {
-                        movement = true;
-                        Map[row][col] = 'O';
-                        Map[row - 1][col] = '.';
-                    }
-                }
-            }
+            Tilt(rowOffset, colOffset);
         }
-    }
-
-    public void TiltWest()
-    {
-        var movement = true;
-        while (movement)
-        {
-            movement = false;
-            for (var row = 0; row < Map.Length; row++)
-            {
-                for (var col = 0; col < Map[row].Length - 1; col ++)
-                {
-                    if (Map[row][col] == '.' && Map[row][col + 1] == 'O')
-                    {
-                        movement = true;
-                        Map[row][col] = 'O';
-                        Map[row][col + 1] = '.';
-                    }
-                }
-            }
-        }
-    }
-
-    public void TiltEast()
-    {
-        var movement = true;
-        while (movement)
-        {
-            movement = false;
-            for (var row = 0; row < Map.Length; row++)
-            {
-                for (var col = Map[row].Length - 1; col > 0; col--)
-                {
-                    if (Map[row][col] == '.' && Map[row][col - 1] == 'O')
-                    {
-                        movement = true;
-                        Map[row][col] = 'O';
-                        Map[row][col - 1] = '.';
-                    }
-                }
-            }
-        }
-    }
-
-    public void Cycle()
-    {
-        TiltNorth();
-        TiltWest();
-        TiltSouth();
-        TiltEast();
     }
 
     public int LoadAfterManyCycles()
     {
         var cycle = 0;
         int stepsBack;
-        while ((stepsBack = _history.PreviousMap(Map)) == -1)
+        while ((stepsBack = History.PreviousMap(Map)) == -1)
         {
-            _history.Add(Map);
+            History.Add(Map);
             Cycle();
             cycle ++;
         }
         var i = (1_000_000_000L - cycle) % stepsBack;
-        return LoadOnNorthBeams(_history.Map((int)i + cycle - stepsBack));
+        return LoadOnNorthBeams(History.Map((int)i + cycle - stepsBack));
     }
 
-    public int LoadOnNorthBeams(CMap map) => Enumerable.Range(1, map.Length).Reverse().Zip(map).Sum(p => p.First * p.Second.Count(c => c == 'O'));
+    public static int LoadOnNorthBeams(CMap map) => Enumerable.Range(1, map.Length).Reverse().Zip(map).Sum(p => p.First * p.Second.Count(c => c == 'O'));
 }

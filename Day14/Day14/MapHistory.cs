@@ -25,5 +25,5 @@ public class MapHistory
         return -1;
     }
 
-    bool MapEqual(CMap x, CMap y) => x.SelectMany(r => r).Zip(y.SelectMany(r => r)).All(p => p.First == p.Second);
+    static bool MapEqual(CMap x, CMap y) => x.SelectMany(r => r).Zip(y.SelectMany(r => r)).All(p => p.First == p.Second);
 }

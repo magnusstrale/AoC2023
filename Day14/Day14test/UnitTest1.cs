@@ -20,7 +20,7 @@ public class UnitTest1
     {
         var sut = new Platform(lines);
         sut.TiltNorth();
-        Assert.Equal(136, sut.LoadOnNorthBeams(sut.Map));
+        Assert.Equal(136, Platform.LoadOnNorthBeams(sut.Map));
     }
 
     [Fact]
