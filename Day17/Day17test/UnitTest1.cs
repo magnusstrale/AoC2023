@@ -22,6 +22,12 @@ public class UnitTest1
     public void TestPart1()
     {
         var sut = new RouteMap(lines);
-        Assert.Equal(102, sut.MinimumHeatLoss());
+        Assert.Equal(102, sut.CrucibleMinimumHeatLoss);
+    }
+    [Fact]
+    public void TestPart2()
+    {
+        var sut = new RouteMap(lines);
+        Assert.Equal(94, sut.UltraCrucibleMinimumHeatLoss);
     }
 }

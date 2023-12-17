@@ -1,110 +1,54 @@
 global using Pos = (int row, int col);
 using System.Diagnostics;
-using System.Security.Cryptography;
-
-public class RouteMap
+public class RouteMap(string[] lines)
 {
-    public RouteMap(string[] lines)
-    {
-        Map = lines;
-        LavaPool = (0, 0);
-        Factory = (lines.Length - 1, lines[0].Length - 1);
-    }
+    public string[] Map { get; } = lines;
+    public Pos LavaPool { get; } = (0, 0);
+    public Pos Factory { get; } = (lines.Length - 1, lines[0].Length - 1);
 
-    public Pos LavaPool { get; }
-    public Pos Factory { get; }
-    public string[] Map { get; }
+    public int CrucibleMinimumHeatLoss => MinimumHeatLoss(0, 3);
+    public int UltraCrucibleMinimumHeatLoss => MinimumHeatLoss(4, 10);
 
-    public int MinimumHeatLoss()
+    int MinimumHeatLoss(int minStraight, int maxStraight)
     {
         var routes = new PriorityQueue<MapEntry, int>();
         var visited = new HashSet<(Pos, Direction, int)>();
-        MapEntry here;
 
-        routes.Enqueue(new(Position: LavaPool, Direction: Direction.Right), 0);
-        routes.Enqueue(new(Position: LavaPool, Direction: Direction.Down), 0);
+        routes.Enqueue(new(LavaPool, Direction.Right, 0), 0);
+        routes.Enqueue(new(LavaPool, Direction.Down, 0), 0);
 
         while (routes.Count > 0)
         {
-            here = routes.Dequeue();
-            //PrintMap(here);
-
-            if (!TryMove(here.Position, here.Direction, out var current))
+            var input = routes.Dequeue();
+            if (input.Position == Factory)
+                return input.Heat;
+            if (!TryMove(input.Position, input.Direction, out var current))
                 continue;
-
-            var totalHeat = here.Heat + Map[current.row][current.col] - '0';
-            if (here.Position == Factory)
-                return here.Heat;
-
-            if (here.Steps < 3)
+            var totalHeat = input.Heat + Map[current.row][current.col] - '0';
+            if (input.Steps < maxStraight)
             {
-                Enqueue(visited, routes, new MapEntry(Position: current, Direction: here.Direction, Heat: totalHeat, Steps: here.Steps + 1));
+                Enqueue(new(current, input.Direction, totalHeat, input.Steps + 1));
             }
-            Enqueue(visited, routes, new MapEntry(Position: current, Direction: TurnLeft(here.Direction), Heat: totalHeat));
-            Enqueue(visited, routes, new MapEntry(Position: current, Direction: TurnRight(here.Direction), Heat: totalHeat));
+            if (input.Steps >= minStraight)
+            {
+                Enqueue(new(current, input.Direction.TurnLeft(), totalHeat));
+                Enqueue(new(current, input.Direction.TurnRight(), totalHeat));
+            }
         }
         throw new Exception("boom");
-    }
 
-    void PrintMap(MapEntry entry)
-    {
-        var rowCount = 0;
-        foreach (var row in Map)
+        void Enqueue(MapEntry entry)
         {
-            var colCount = 0;
-            foreach (var col in row)
-            {
-                var c = col;
-                if (entry.Position == (rowCount, colCount))
-                {
-                    c = entry.Direction switch 
-                    {
-                        Direction.Up => '^',
-                        Direction.Down => 'v',
-                        Direction.Left => '<',
-                        Direction.Right => '>',
-                        _ => throw new Exception("boom")
-                    };
-                }
-                Debug.Write(c);
-                colCount ++;
-            }
-            Debug.Write('\n');
-            rowCount ++;
+            var key = (entry.Position, entry.Direction, entry.Steps);
+            if (visited.Contains(key)) return;
+            visited.Add(key);
+            routes.Enqueue(entry, entry.Heat);
         }
-        Debug.WriteLine("Heat - " + entry.Heat);
     }
-
-    void Enqueue(HashSet<(Pos, Direction, int)> visited, PriorityQueue<MapEntry, int> queue, MapEntry entry)
-    {
-        var key = (entry.Position, entry.Direction, entry.Steps);
-        if (visited.Contains(key)) return;
-        visited.Add(key);
-        queue.Enqueue(entry, entry.Heat);
-    }
-
-    bool ContainsEntry(PriorityQueue<MapEntry, int> queue, MapEntry entry) =>  (queue.UnorderedItems.Any(e => e.Element.Position == entry.Position && e.Element.Direction == entry.Direction && e.Element.Steps == entry.Steps));
-    Direction TurnLeft(Direction direction) => direction switch
-    {
-        Direction.Up => Direction.Left,
-        Direction.Down => Direction.Right,
-        Direction.Left => Direction.Down,
-        Direction.Right => Direction.Up,
-        _ => throw new Exception("boom")
-    };
-
-    Direction TurnRight(Direction direction) => direction switch
-    {
-        Direction.Up => Direction.Right,
-        Direction.Down => Direction.Left,
-        Direction.Left => Direction.Up,
-        Direction.Right => Direction.Down,
-        _ => throw new Exception("boom")
-    };
 
     bool TryMove(Pos from, Direction direction, out Pos destination)
     {
-        var delta = direction switch 
+        var delta = direction switch
         {
             Direction.Left => (0, -1),
             Direction.Right => (0, 1),
